@@ -45,6 +45,23 @@ export const router = new Hono<HonoEnv>()
     .get(
         "/count",
         describeRoute({
+            parameters: [
+                {
+                    name: "models",
+                    in: "query",
+                    required: false,
+                    description:
+                        "Comma-separated model keys; defaults to all supported models.",
+                    schema: { type: "string" },
+                },
+                {
+                    name: "text",
+                    in: "query",
+                    required: true,
+                    description: "Text to count tokens for.",
+                    schema: { type: "string" },
+                },
+            ],
             responses: {
                 200: {
                     description: "Token counts per model",

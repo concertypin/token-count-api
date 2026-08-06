@@ -19,6 +19,10 @@ app.get(
     "/openapi.json",
     async (c) => {
         const origin = new URL(c.req.url).origin;
+        // Heroku serves HTTPS; keep the docs URL scheme consistent.
+        const url = c.req.header("x-forwarded-proto") === "https"
+            ? origin.replace(/^http:/, "https:")
+            : origin;
         const spec = await generateSpecs(app, {
             documentation: {
                 info: {
@@ -27,7 +31,7 @@ app.get(
                     description:
                         "Count tokens for DeepSeek V4, GLM 5.2, Kimi K3, Gemini 3.6 Flash and GPT-5.",
                 },
-                servers: [{ url: origin, description: "Current origin" }],
+                servers: [{ url, description: "Current origin" }],
             },
         }, c);
         return c.json(spec);
