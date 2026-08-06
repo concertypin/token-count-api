@@ -1,0 +1,9 @@
+[project]
+name = "token-count-worker"
+version = "0.1.0"
+description = "Python tokenizer worker for token-count-api"
+requires-python = ">=3.10"
+dependencies = ["tiktoken>=0.9.0", "tokenizers>=0.21.0"]
+
+[tool.uv]
+package = false

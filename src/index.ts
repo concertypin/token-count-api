@@ -6,8 +6,9 @@ import { cors } from "@/utils/cors";
 import type { HonoEnv } from "@/types";
 /**
  * @fileoverview
- * This is the main entry point of the Hono application. It sets up the routing and middleware for the application.
- * Don't make this file too large. If you need to add more routes, create separate route files and import them here.
+ * Main Hono app: token counting API.
+ *   GET  /count?models=...&text=...   (same params/response as POST)
+ *   POST /count?models=...            (Content-Type: text/markdown)
  */
 
 const app = new Hono<HonoEnv>().use("*", cors).route("/", router);
@@ -18,9 +19,10 @@ app.get(
     openAPIRouteHandler(app, {
         documentation: {
             info: {
-                title: "Hono API",
+                title: "Token Count API",
                 version: "1.0.0",
-                description: "Greeting API",
+                description:
+                    "Count tokens for DeepSeek V4, GLM 5.2, Kimi K3, Gemini 3.6 Flash, Claude 4.x and GPT-5.",
             },
             servers: [
                 { url: "http://localhost:5178", description: "Local Server" },

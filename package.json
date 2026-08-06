@@ -1,7 +1,7 @@
 {
-    "name": "template-hono",
+    "name": "token-count-api",
     "private": true,
-    "version": "0.0.0",
+    "version": "0.1.0",
     "type": "module",
     "license": "MIT",
     "author": {
@@ -10,7 +10,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/templecon/template-hono"
+        "url": "git+https://github.com/concertypin/token-count-api"
     },
     "main": "./dist/index.js",
     "module": "./dist/index.js",
@@ -19,8 +19,9 @@
         "dist"
     ],
     "scripts": {
-        "dev": "vite dev",
-        "build": "vite build",
+        "dev": "node --env-file=.env --watch --experimental-strip-types src/server.ts",
+        "build": "esbuild src/server.ts --bundle --platform=node --format=esm --outfile=dist/server.js --alias:@=./src --packages=external",
+        "start": "node --env-file=.env dist/server.js",
         "cf-typegen": "wrangler types --env-interface CloudflareBindings",
         "format": "oxfmt --write .",
         "format:check": "oxfmt --check .",
@@ -30,14 +31,18 @@
         "postinstall": "pnpm run cf-typegen && simple-git-hooks",
         "check": "pnpm run format && pnpm run lint && pnpm run test",
         "test": "vitest run",
-        "deploy": "pnpm run build && wrangler deploy"
+        "deploy": "pnpm run build && wrangler deploy",
+        "heroku-postbuild": "pnpm run build"
     },
     "engines": {
         "node": ">=26"
     },
     "dependencies": {
+        "@hono/node-server": "^2.1.0",
         "@hono/standard-validator": "^0.3.0",
+        "@lenml/tokenizer-gemini": "^3.7.2",
         "@scalar/hono-api-reference": "^0.11.12",
+        "gpt-tokenizer": "^3.4.0",
         "hono": "^4.12.34",
         "hono-openapi": "^1.3.1",
         "zod": "^4.4.3"
@@ -49,6 +54,7 @@
         "@types/node": "^26.1.2",
         "@vitest/coverage-istanbul": "^4.1.10",
         "cross-env": "^10.1.0",
+        "esbuild": "^0.28.1",
         "globals": "^17.9.0",
         "oxfmt": "^0.62.0",
         "oxlint": "^1.76.0",
@@ -59,5 +65,6 @@
         "vitest": "^4.1.10",
         "wrangler": "^4.118.0"
     },
-    "packageManager": "pnpm@10.17.1+sha512.17c560fca4867ae9473a3899ad84a88334914f379be46d455cbf92e5cf4b39d34985d452d2583baf19967fa76cb5c17bc9e245529d0b98745721aa7200ecaf7a"
+    "packageManager": "pnpm@10.17.1+sha512.17c560fca4867ae9473a3899ad84a88334914f379be46d455cbf92e5cf4b39d34985d452d2583baf19967fa76cb5c17bc9e245529d0b98745721aa7200ecaf7a",
+    "description": "Count tokens across DeepSeek V4, GLM 5.2, Kimi K3, Gemini, GPT-5, Claude"
 }
