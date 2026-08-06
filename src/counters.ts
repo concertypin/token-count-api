@@ -6,7 +6,7 @@
  *   - deepseek-v4    → local Python worker (official HF tokenizer.json)
  *   - glm-5.2        → local Python worker (official HF tokenizer.json)
  *   - kimi-k3        → local Python worker (official tiktoken.model + pat_str)
- *   - gpt-5.x        → remote OpenAI /v1/responses/input_tokens (needs OPENAI_API_KEY)
+ *   - gpt            → remote OpenAI /v1/responses/input_tokens (needs OPENAI_API_KEY)
  *   - gemini-3.6-flash → remote Google :countTokens (needs GEMINI_API_KEY)
  *
  * Remote models fall back to a local approximation when the API key is
@@ -25,26 +25,24 @@ export const MODEL_IDS = {
     "glm-5.2": "glm-5.2",
     "kimi-k3": "kimi-k3",
     "gemini-3.6-flash": "gemini-3.6-flash",
-    "gpt-5.2": "gpt-5.2",
-    "gpt-5.1": "gpt-5.1",
-    "gpt-5": "gpt-5",
+    // All GPT-4o+ models share the o200k_base tokenizer, so one key covers
+    // the whole GPT family. The value is the model ID sent to the API.
+    gpt: "gpt-5.2",
 } as const;
 
 export type ModelKey = keyof typeof MODEL_IDS;
 
 const PYTHON_MODELS = new Set(["deepseek-v4", "glm-5.2", "kimi-k3"]);
-const OPENAI_MODELS = new Set(["gpt-5.2", "gpt-5.1", "gpt-5"]);
+const OPENAI_MODELS = new Set(["gpt"]);
 const GEMINI_MODELS = new Set(["gemini-3.6-flash"]);
 
 /** Human-readable description of how each model is counted. */
 export const MODEL_INFO: Record<ModelKey, string> = {
-    "deepseek-v4": "DeepSeek V4 · official tokenizer",
-    "glm-5.2": "GLM 5.2 · official tokenizer",
-    "kimi-k3": "Kimi K3 · official tokenizer",
+    "deepseek-v4": "DeepSeek V4 · local tokenizer",
+    "glm-5.2": "GLM 5.2 · local tokenizer",
+    "kimi-k3": "Kimi K3 · local tokenizer",
     "gemini-3.6-flash": "Gemini 3.6 Flash · official countTokens",
-    "gpt-5.2": "GPT-5.2 · official input_tokens",
-    "gpt-5.1": "GPT-5.1 · official input_tokens",
-    "gpt-5": "GPT-5 · official input_tokens",
+    gpt: "GPT · official tokenizer (o200k_base)",
 };
 
 export async function countTokens(
@@ -125,7 +123,7 @@ async function countGemini(model: string, text: string): Promise<number> {
 
 /**
  * Local approximation fallback.
- * - gpt-5.x  → o200k_base via gpt-tokenizer (exact)
+ * - gpt  → o200k_base via gpt-tokenizer (exact)
  * - gemini   → @lenml/tokenizer-gemini
  */
 async function approximateCount(

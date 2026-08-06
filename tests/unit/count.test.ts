@@ -52,7 +52,7 @@ describe("GET /count", () => {
         expect(resp.status).toBe(200);
         const data = (await resp.json()) as Record<string, string>;
         expect(data["deepseek-v4"]).toContain("DeepSeek");
-        expect(data["gpt-5.2"]).toContain("GPT-5.2");
+        expect(data["gpt"]).toContain("GPT");
     });
 
     it("should count via query text", async () => {
