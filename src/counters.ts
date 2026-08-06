@@ -57,7 +57,10 @@ export async function countTokens(
             const model = MODEL_IDS[key as ModelKey];
             try {
                 if (PYTHON_MODELS.has(key)) {
+                    // Local tokenizers run the official tokenizer files but
+                    // still count locally, so they are marked approximate.
                     counts[key] = await countWithPython(key, text);
+                    approximate.push(key);
                 } else if (OPENAI_MODELS.has(key)) {
                     counts[key] = await countOpenAI(model, text);
                 } else if (GEMINI_MODELS.has(key)) {

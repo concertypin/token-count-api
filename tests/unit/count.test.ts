@@ -24,11 +24,18 @@ describe("POST /count", () => {
         const data = (await resp.json()) as {
             input: { chars: number };
             counts: Record<string, number>;
+            approximate: string[];
         };
         expect(data.input.chars).toBe(11);
         expect(data.counts["deepseek-v4"]).toBe(2);
         expect(data.counts["glm-5.2"]).toBe(2);
         expect(data.counts["kimi-k3"]).toBe(2);
+        // Local tokenizer runs count as an approximation, so it is flagged.
+        expect(data.approximate.sort()).toEqual([
+            "deepseek-v4",
+            "glm-5.2",
+            "kimi-k3",
+        ]);
     });
 });
 
