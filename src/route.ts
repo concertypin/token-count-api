@@ -18,7 +18,17 @@ const outputSchema = z.object({
         .meta({ description: "Input text statistics" }),
     counts: z
         .record(z.string(), z.number())
-        .meta({ description: "Token count per requested model key" }),
+        .meta({
+            description:
+                "Tokens the document adds per model (remote overhead already subtracted)",
+        }),
+    offset: z
+        .record(z.string(), z.number())
+        .optional()
+        .meta({
+            description:
+                "Fixed per-model overhead detected in remote counters (system-prompt wrapping etc.)",
+        }),
     approximate: z
         .array(z.string())
         .optional()

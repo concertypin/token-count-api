@@ -48,9 +48,14 @@ export const MODEL_INFO: Record<ModelKey, string> = {
 export async function countTokens(
     models: string[],
     text: string
-): Promise<{ counts: Record<string, number>; approximate: string[] }> {
+): Promise<{
+    counts: Record<string, number>;
+    approximate: string[];
+    offset: Record<string, number>;
+}> {
     const counts: Record<string, number> = {};
     const approximate: string[] = [];
+    const offset: Record<string, number> = {};
 
     await Promise.all(
         models.map(async (key) => {
@@ -62,9 +67,13 @@ export async function countTokens(
                     counts[key] = await countWithPython(key, text);
                     approximate.push(key);
                 } else if (OPENAI_MODELS.has(key)) {
-                    counts[key] = await countOpenAI(model, text);
+                    const off = await remoteOffset(key as ModelKey, model, text);
+                    counts[key] = off.count;
+                    offset[key] = off.offset;
                 } else if (GEMINI_MODELS.has(key)) {
-                    counts[key] = await countGemini(model, text);
+                    const off = await remoteOffset(key as ModelKey, model, text);
+                    counts[key] = off.count;
+                    offset[key] = off.offset;
                 } else {
                     throw new Error(`no counter for ${key}`);
                 }
@@ -82,7 +91,37 @@ export async function countTokens(
         })
     );
 
-    return { counts, approximate };
+    return { counts, approximate, offset };
+}
+
+/**
+ * Per-model offset cache. Remote token counters (OpenAI input_tokens,
+ * Gemini countTokens) appear to add a fixed overhead on top of the raw
+ * text (e.g. system-prompt wrapping). We measure it once per model by
+ * counting a single "." and subtracting the local count of the same
+ * input, then report count(text) - offset so the result is the number
+ * of tokens the document actually adds.
+ */
+const offsetCache = new Map<string, number>();
+
+async function remoteOffset(
+    key: ModelKey,
+    model: string,
+    text: string
+): Promise<{ count: number; offset: number }> {
+    let offset = offsetCache.get(key);
+    if (offset === undefined) {
+        const local = (await approximateCount(key, ".")) ?? 0;
+        const remote = OPENAI_MODELS.has(key)
+            ? await countOpenAI(model, ".")
+            : await countGemini(model, ".");
+        offset = Math.max(0, remote - local);
+        offsetCache.set(key, offset);
+    }
+    const remote = OPENAI_MODELS.has(key)
+        ? await countOpenAI(model, text)
+        : await countGemini(model, text);
+    return { count: Math.max(0, remote - offset), offset };
 }
 
 async function countOpenAI(model: string, text: string): Promise<number> {
