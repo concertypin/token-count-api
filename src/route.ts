@@ -75,6 +75,15 @@ export const router = new Hono<HonoEnv>()
     .post(
         "/count",
         describeRoute({
+            requestBody: {
+                required: true,
+                description: "Markdown text to count tokens for",
+                content: {
+                    "text/markdown": {
+                        schema: { type: "string" },
+                    },
+                },
+            },
             responses: {
                 200: {
                     description: "Token counts per model",
