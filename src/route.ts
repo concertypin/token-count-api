@@ -3,16 +3,47 @@ import type { HonoEnv } from "@/types";
 import { Hono } from "hono";
 import { describeRoute, resolver } from "hono-openapi";
 import * as z from "zod";
-import { countTokens, MODEL_IDS, MODEL_INFO } from "@/counters";
+import { countTokens, MODEL_IDS, MODEL_INFO, type ModelKey } from "@/counters";
 
 const outputSchema = z.object({
-    input: z.object({
-        chars: z.number(),
-        bytes: z.number(),
-    }),
-    counts: z.record(z.string(), z.number()),
-    approximate: z.array(z.string()).optional(),
+    input: z
+        .object({
+            chars: z
+                .number()
+                .meta({ description: "Character count of the input text" }),
+            bytes: z
+                .number()
+                .meta({ description: "UTF-8 byte count of the input text" }),
+        })
+        .meta({ description: "Input text statistics" }),
+    counts: z
+        .record(z.string(), z.number())
+        .meta({ description: "Token count per requested model key" }),
+    approximate: z
+        .array(z.string())
+        .optional()
+        .meta({
+            description:
+                "Model keys whose count is a local approximation (remote API key missing or request failed)",
+        }),
 });
+
+/**
+ * Explicit schema for GET /models: one property per supported model key,
+ * each annotated with how it is counted.
+ */
+const modelsSchema = z
+    .object(
+        Object.fromEntries(
+            (Object.keys(MODEL_INFO) as ModelKey[]).map((key) => [
+                key,
+                z.string().meta({ description: MODEL_INFO[key] }),
+            ])
+        )
+    )
+    .meta({
+        description: "Supported models and their counting backends",
+    });
 
 const AVAILABLE = Object.keys(MODEL_IDS);
 
@@ -32,9 +63,7 @@ export const router = new Hono<HonoEnv>()
                     description: "Supported models and counting backends",
                     content: {
                         "application/json": {
-                            schema: resolver(
-                                z.record(z.string(), z.string())
-                            ),
+                            schema: resolver(modelsSchema),
                         },
                     },
                 },

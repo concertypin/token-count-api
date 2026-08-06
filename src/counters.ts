@@ -38,13 +38,13 @@ const GEMINI_MODELS = new Set(["gemini-3.6-flash"]);
 
 /** Human-readable description of how each model is counted. */
 export const MODEL_INFO: Record<ModelKey, string> = {
-    "deepseek-v4": "local · official DeepSeek-V4-Pro tokenizer (Python worker)",
-    "glm-5.2": "local · official zai-org/GLM-5.2 tokenizer (Python worker)",
-    "kimi-k3": "local · official moonshotai/Kimi-K3 tiktoken model (Python worker)",
-    "gemini-3.6-flash": "remote · Google countTokens (GEMINI_API_KEY) · local fallback",
-    "gpt-5.2": "remote · OpenAI input_tokens (OPENAI_API_KEY) · local fallback",
-    "gpt-5.1": "remote · OpenAI input_tokens (OPENAI_API_KEY) · local fallback",
-    "gpt-5": "remote · OpenAI input_tokens (OPENAI_API_KEY) · local fallback",
+    "deepseek-v4": "DeepSeek V4 · official tokenizer",
+    "glm-5.2": "GLM 5.2 · official tokenizer",
+    "kimi-k3": "Kimi K3 · official tokenizer",
+    "gemini-3.6-flash": "Gemini 3.6 Flash · official countTokens",
+    "gpt-5.2": "GPT-5.2 · official input_tokens",
+    "gpt-5.1": "GPT-5.1 · official input_tokens",
+    "gpt-5": "GPT-5 · official input_tokens",
 };
 
 export async function countTokens(
